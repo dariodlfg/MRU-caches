@@ -1,5 +1,5 @@
-#ifndef __SMRU_H
-	#define __SMRU_H
+#ifndef __DMRU_H
+	#define __DMRU_H
 
 #include <algorithm>
 #include <cmath>
