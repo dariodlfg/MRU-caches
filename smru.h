@@ -4,6 +4,7 @@
 #include <cmath>
 #include <ctime>
 #include <set>
+#include <random>
 #include <vector>
 
 #include "mru.h"
@@ -26,7 +27,7 @@ public:
 		cache = vector<vector<ll>>(nblocks, vector<ll>(asoc));
 		// init cache
 		generator = default_random_engine(time(NULL));
-		distribution = uniform_int_distribution<ll>(0, Msize/nblocks/Lsize);
+		distribution = uniform_int_distribution<ll>(0, Msize/nblocks/Lsize - 1);
 		for (int i = 0; i < nblocks; i++) {
 			set<ll> used_blocks;
 			for (int j = 0; j < asoc ; j++) {
@@ -45,7 +46,6 @@ public:
 		ll tag = nline / nblocks;
 		for (ll& cache_tag : cache[nblock]) {
 			if (cache_tag == tag) {
-				// hit!
 				set<ll> used_blocks;
 				for (ll temp_tag : cache[nblock]) used_blocks.insert(temp_tag);
 				ll temp;
@@ -59,6 +59,15 @@ public:
 		return false;
 	}
 	
+	void state_dump() {
+		for (const auto& block : cache) {
+			for (const auto& elem : block) {
+				cout << elem << " ";
+			}
+			cout << endl;
+		}
+	}
+	
 private:
 	int Mbits;
 	int Cbits;
@@ -70,6 +79,9 @@ private:
 	ll Csize;
 	ll Lsize;
 	vector<vector<ll>> cache;
+	
+	default_random_engine generator;
+    uniform_int_distribution<ll> distribution;
 };
 
 #endif 
