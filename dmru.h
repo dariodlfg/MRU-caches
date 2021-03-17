@@ -38,14 +38,10 @@ public:
 		ll tag = nline / nblocks;
 		for (int i = 0; i < npossibletags; i++) {
 			if (block_priorities[nblock][i] == tag) {
-				if (i < asoc) {
-					// delete this tag and append it to the back, i.e. 
-					block_priorities[nblock].erase(block_priorities[nblock].begin() + i);
-					block_priorities[nblock].push_back(tag);
-					return true;
-				} else {
-					return false;
-				}
+				// delete this tag and append it to the back, even if there was a cache miss, because why not
+				block_priorities[nblock].erase(block_priorities[nblock].begin() + i);
+				block_priorities[nblock].push_back(tag);
+				return i < asoc;
 			}
 		}
 		// this shouldn't happen
