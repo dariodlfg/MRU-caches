@@ -36,15 +36,14 @@ public:
 		ll nline = byte / Lsize;
 		ll nblock = nline % nblocks;
 		ll tag = nline / nblocks;
-		for (int i = 0; i < npossibletags; i++) {
+		for (int i = 0; i < asoc; i++) {
 			if (block_priorities[nblock][i] == tag) {
 				// delete this tag and append it to the back, even if there was a cache miss, because why not
 				block_priorities[nblock].erase(block_priorities[nblock].begin() + i);
 				block_priorities[nblock].push_back(tag);
-				return i < asoc;
+				return true;
 			}
 		}
-		// this shouldn't happen
 		return false;
 	}
 	

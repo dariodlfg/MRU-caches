@@ -74,21 +74,32 @@ int main()
 					simulateNonLinearOperations(msize, batchsize, startingpoint_vectors+(j+1)*vsize_linealigned, cache, nHits[ii], nAccesses[ii]);
 				}
 			}
+			cout << "*";
 		}
+		cout << endl;
 		cout << "# of accesses: " << nAccesses[0] << endl;
 		cout << "# of hits: " << endl;
 		for (const auto& hits : nHits) {
 			cout << hits << " ";
 		}
 		cout << endl;
-		double avg=0,stddev=0;
+		double avghits=0,stddevhits=0,avgrate=0,stddevrate=0;
 		for (const auto& hits : nHits) {
-			avg += hits;
-			stddev += hits*hits;
+			avghits += hits;
+			stddevhits += hits*hits;
+			double hitrate = double(hits)/double(nAccesses[0]);
+			avgrate += hitrate;
+			stddevrate += hitrate*hitrate;
 		}
-		avg /= nRetries;
-		stddev /= nRetries - 1;
-		stddev = sqrt(stddev);
-		cout << "Avg: " << avg << endl << "Stddev: " << stddev << endl;
+		avghits /= nRetries;
+		stddevhits /= nRetries - 1;
+		avgrate /= nRetries;
+		stddevrate /= nRetries - 1;
+		stddevhits = sqrt(stddevhits);
+		stddevrate = sqrt(stddevrate);
+		cout << "Hits: " << endl;
+		cout << "Avg: " << avghits << endl << "Stddev: " << stddevhits << endl;
+		cout << "Hit rate: " << endl;
+		cout << "Avg: " << avgrate << endl << "Stddev: " << stddevrate << endl;
 	}
 }
