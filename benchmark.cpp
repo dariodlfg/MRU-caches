@@ -34,44 +34,61 @@ void simulateNonLinearOperations(int msize, int batchsize, ll position_vector, M
 
 int main()
 {
-	int Mbits;
-	int Cbits;
-	int Lbits;
-	int asoc;
-	cout << "Mbits, Cbits, Lbits, asoc, isdMRU?: ";
-	bool isdmru;
-	cin >> Mbits >> Cbits >> Lbits >> asoc >> isdmru;
-	MRU* cache = isdmru ? (MRU*) new dMRU(Mbits, Cbits, Lbits, asoc) : (MRU*) new sMRU(Mbits, Cbits, Lbits, asoc);
-	int msize;
-	cout << "matrix size?: ";
-	cin >> msize;
-	int nlayers;
-	cout << "nlayers?: ";
-	cin >> nlayers;
-	int batchsize;
-	cout << "batch size?: ";
-	cin >> batchsize;
-	int nreps;
-	cout << "nreps?: ";
-	cin >> nreps;
-	// Matrix locations can be deterministic, since cache setup is already randomized.
-	// matrices should be line aligned, because we're civilized people
-	// The *2 is because we're using float16
-	int Lsize = pow(2, Lbits);
-	ll msize_linealigned = ceil(double((msize*msize*2))/double(Lsize))*Lsize;
-	const ll startingpoint_vectors = msize_linealigned * nlayers;
-	ll vsize_linealigned = ceil(double(msize*batchsize*2)/double(Lsize))*Lsize;
-	cout << msize_linealigned << " " << startingpoint_vectors << " " << vsize_linealigned << endl << endl;
-	
-	ll nHits = 0;
-	ll nAccesses = 0;
-	for (int i = 0; i < nreps; i++) {
-		for (int j = 0; j < nlayers; j++) {
-			simulateMatrixProduct(msize, batchsize, vsize_linealigned, j*msize_linealigned, startingpoint_vectors+j*vsize_linealigned, cache, nHits, nAccesses);
-			simulateNonLinearOperations(msize, batchsize, startingpoint_vectors+(j+1)*vsize_linealigned, cache, nHits, nAccesses);
+	while (0, 1) {
+		int Mbits;
+		int Cbits;
+		int Lbits;
+		int asoc;
+		cout << "Mbits, Cbits, Lbits, asoc, isdMRU?: ";
+		bool isdmru;
+		cin >> Mbits >> Cbits >> Lbits >> asoc >> isdmru;
+		int msize;
+		cout << "matrix size?: ";
+		cin >> msize;
+		int nlayers;
+		cout << "nlayers?: ";
+		cin >> nlayers;
+		int batchsize;
+		cout << "batch size?: ";
+		cin >> batchsize;
+		int nreps;
+		cout << "nreps?: ";
+		cin >> nreps;
+		// Matrix locations can be deterministic, since cache setup is already randomized.
+		// matrices should be line aligned, because we're civilized people
+		// The *2 is because we're using float16
+		int Lsize = pow(2, Lbits);
+		ll msize_linealigned = ceil(double((msize*msize*2))/double(Lsize))*Lsize;
+		const ll startingpoint_vectors = msize_linealigned * nlayers;
+		ll vsize_linealigned = ceil(double(msize*batchsize*2)/double(Lsize))*Lsize;
+		cout << msize_linealigned << " " << startingpoint_vectors << " " << vsize_linealigned << endl << endl;
+		
+		const int nRetries = 20;
+		vector<ll> nHits(nRetries);
+		vector<ll> nAccesses(nRetries);
+		for (int ii = 0; ii < nRetries; ii++) {
+			MRU* cache = isdmru ? (MRU*) new dMRU(Mbits, Cbits, Lbits, asoc) : (MRU*) new sMRU(Mbits, Cbits, Lbits, asoc);
+			for (int i = 0; i < nreps; i++) {
+				for (int j = 0; j < nlayers; j++) {
+					simulateMatrixProduct(msize, batchsize, vsize_linealigned, j*msize_linealigned, startingpoint_vectors+j*vsize_linealigned, cache, nHits[ii], nAccesses[ii]);
+					simulateNonLinearOperations(msize, batchsize, startingpoint_vectors+(j+1)*vsize_linealigned, cache, nHits[ii], nAccesses[ii]);
+				}
+			}
 		}
+		cout << "# of accesses: " << nAccesses[0] << endl;
+		cout << "# of hits: " << endl;
+		for (const auto& hits : nHits) {
+			cout << hits << " ";
+		}
+		cout << endl;
+		double avg=0,stddev=0;
+		for (const auto& hits : nHits) {
+			avg += hits;
+			stddev += hits*hits;
+		}
+		avg /= nRetries;
+		stddev /= nRetries - 1;
+		stddev = sqrt(stddev);
+		cout << "Avg: " << avg << endl << "Stddev: " << stddev << endl;
 	}
-	cout << "# of accesses: " << nAccesses << endl;
-	cout << "# of hits: " << nHits << endl;
-	cout << "Hit rate: " << double(nHits)/double(nAccesses) << endl;
 }
