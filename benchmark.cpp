@@ -86,14 +86,17 @@ int main()
 		double avghits=0,stddevhits=0,avgrate=0,stddevrate=0;
 		for (const auto& hits : nHits) {
 			avghits += hits;
-			stddevhits += hits*hits;
 			double hitrate = double(hits)/double(nAccesses[0]);
 			avgrate += hitrate;
-			stddevrate += hitrate*hitrate;
 		}
 		avghits /= nRetries;
-		stddevhits /= nRetries - 1;
 		avgrate /= nRetries;
+		for (const auto& hits : nHits) {
+			stddevhits += (hits-avghits)*(hits-avghits);
+			double hitrate = double(hits)/double(nAccesses[0]);
+			stddevrate += (avgrate-hitrate)*(avgrate-hitrate);
+		}
+		stddevhits /= nRetries - 1;
 		stddevrate /= nRetries - 1;
 		stddevhits = sqrt(stddevhits);
 		stddevrate = sqrt(stddevrate);
